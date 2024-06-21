@@ -13,6 +13,44 @@ def setupHome():
     for device in heaters + plugs:
         smartHome.addDevice(device)
 
+def create_button(parent, text, command, row, column, padx=10, pady=15, sticky="e"):
+    button = Button(parent, text=text, command=command)
+    button.grid(row=row, column=column, padx=padx, pady=pady, sticky=sticky)
+    return button
+
+def create_label(parent, text, row, column, padx=10, pady=10, sticky="w"):
+    label = Label(parent, text=text)
+    label.grid(row=row, column=column, padx=padx, pady=pady, sticky=sticky)
+    return label
+
+def create_text(parent, initial_text, row, column, padx=10, pady=5, sticky="w"):
+    text = Text(parent, height=2, width=30)
+    text.insert("1.0", initial_text)
+    text.grid(row=row, column=column, padx=padx, pady=pady, sticky=sticky)
+    text.config(state="disabled")
+    return text
+
+def homeWinSetup(numOfDevices):
+    """ Setup the smart home devices """
+    turnAllOffBtn = create_button(mainWin, "Turn all off", turnAllOff, 0, 0, sticky="w")
+    turnAllOnBtn = create_button(mainWin, "Turn all on", turnAllOn, 1, 0, sticky="w")
+
+    onDevicesLabel = create_label(mainWin, "0 Devices On", numOfDevices+2, 0)
+    addDeviceBtn = create_button(mainWin, "Add Device", addDevice, numOfDevices+2, 1)
+
+    onDevices = sum(device.getSwitchedOn() for device in smartHome.getDevices())
+    onDevicesLabel.config(text=f"{onDevices} Devices On")
+
+    for index, device in enumerate(smartHome.getDevices()):
+        smartDevice = create_text(mainWin, str(device), index+2, 0)
+
+        onDevices = sum(dev.getSwitchedOn() for dev in smartHome.getDevices())
+        onDevicesLabel.config(text=f"{onDevices} Devices On")
+
+        toggleBtn = create_button(mainWin, "Toggle this", lambda i=index, txt=smartDevice, devlvl=onDevicesLabel: toggleBtnSwitch(i, txt, devlvl), index+2, 1)
+        configBtn = create_button(mainWin, "Configure", lambda i=index: configWin(i), index+2, 2)
+        deleteDeviceBtn = create_button(mainWin, "Delete Device", lambda i=index: deleteDevice(i), index+2, 3)
+
 
 def displayDevices():
     """Display the smart home devices on the screen """
@@ -22,38 +60,7 @@ def displayDevices():
     mainWin.geometry(f"550x{height}")
     mainWin.resizable(False, True)
 
-    turnAllOffBtn = Button(mainWin, text="Turn all off", command=turnAllOff)
-    turnAllOffBtn.grid(row=0, column=0, padx=15, pady=10, sticky="w")
-
-    turnAllOnBtn = Button(mainWin, text="Turn all on", command=turnAllOn)
-    turnAllOnBtn.grid(row=1, column=0, padx=15, pady=10, sticky="w")
-
-    onDevicesLabel = Label(mainWin, text="0 Devices On")
-    onDevicesLabel.grid(row=numOfDevices+2, column=0, padx=10, pady=10, sticky="w")
-
-    addDeviceBtn = Button(mainWin, text="Add Device", command=addDevice)
-    addDeviceBtn.grid(row=numOfDevices+2, column=1, padx=10, pady=15, sticky="e")
-
-    onDevices = sum(device.getSwitchedOn() for device in smartHome.getDevices())
-    onDevicesLabel.config(text=f"{onDevices} Devices On")
-
-    for index, device in enumerate(smartHome.getDevices()):
-        smartDevice = Text(mainWin, height=2, width=30)
-        smartDevice.insert("1.0", str(device))
-        smartDevice.grid(row=index+2, column=0, padx=10, pady=5, sticky="w")
-        smartDevice.config(state="disabled")
-
-        onDevices = sum(dev.getSwitchedOn() for dev in smartHome.getDevices())
-        onDevicesLabel.config(text=f"{onDevices} Devices On")
-
-        toggleBtn = Button(mainWin, text="Toggle this", command=lambda i=index, txt=smartDevice, devlvl=onDevicesLabel: toggleBtnSwitch(i, txt, devlvl))
-        toggleBtn.grid(row=index+2, column=1, padx=10, pady=15, sticky="e")
-
-        configBtn = Button(mainWin, text="Configure", command=lambda i=index: configWin(i))
-        configBtn.grid(row=index+2, column=2, padx=10, pady=15, sticky="e")
-
-        deleteDeviceBtn = Button(mainWin, text="Delete Device", command=lambda i=index: deleteDevice(i))
-        deleteDeviceBtn.grid(row=index+2, column=3, padx=10, pady=15, sticky="e")
+    homeWinSetup(numOfDevices)
 
     mainWin.mainloop()
 
@@ -62,41 +69,10 @@ def listDevice():
     # Clear the main window
     for widget in mainWin.winfo_children():
         widget.destroy()
-        
+
     numDev = len(smartHome.getDevices())
 
-    turnAllOffBtn = Button(mainWin, text="Turn all off", command=turnAllOff)
-    turnAllOffBtn.grid(row=0, column=0, padx=15, pady=10, sticky="w")
-
-    turnAllOnBtn = Button(mainWin, text="Turn all on", command=turnAllOn)
-    turnAllOnBtn.grid(row=1, column=0, padx=15, pady=10, sticky="w")
-
-    onDevicesLabel = Label(mainWin, text="0 Devices On")
-    onDevicesLabel.grid(row=numDev+2, column=0, padx=10, pady=10, sticky="w")
-
-    addDeviceBtn = Button(mainWin, text="Add Device", command=addDevice)
-    addDeviceBtn.grid(row=numDev+2, column=1, padx=10, pady=15, sticky="e")
-
-    onDevicesLabel = Label(mainWin, text="0 Devices On")
-    onDevicesLabel.grid(row=numDev+2, column=0, padx=10, pady=10, sticky="w")
-
-    for deviceIndex, device in enumerate(smartHome.getDevices()):
-        deviceTxt = Text(mainWin, height=2, width=30)
-        deviceTxt.delete("1.0", END)
-        deviceTxt.insert("1.0", str(device))
-        deviceTxt.grid(row=deviceIndex+2, column=0, padx=10, pady=5, sticky="w")
-
-        toggleBtn = Button(mainWin, text="Toggle this", command=lambda i=deviceIndex, txt=device, devlvl=onDevicesLabel: toggleBtnSwitch(i, txt, devlvl))
-        toggleBtn.grid(row=deviceIndex+2, column=1, padx=10, pady=15, sticky="e")
-
-        configBtn = Button(mainWin, text="Configure", command=lambda i=deviceIndex: configWin(i))
-        configBtn.grid(row=deviceIndex+2, column=2, padx=10, pady=15, sticky="e")
-
-        deleteDeviceBtn = Button(mainWin, text="Delete Device", command=lambda i=deviceIndex: deleteDevice(i))
-        deleteDeviceBtn.grid(row=deviceIndex+2, column=3, padx=10, pady=15, sticky="e")
-
-    onDevices = sum(device.getSwitchedOn() for device in smartHome.getDevices())
-    onDevicesLabel.config(text=f"{onDevices} Devices On")
+    homeWinSetup(numDev)
 
 def toggleBtnSwitch(index, smartDevice, onDevicesLabel):
     """ updates the values of the given device at the index after the toggle button"""
