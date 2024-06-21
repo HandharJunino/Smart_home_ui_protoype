@@ -26,15 +26,14 @@ class SmartPlug(SmartDevice):
         if newRate >=0 and newRate <=150:
             self.consumptionRate = newRate
         else:
-            print("Max consumption rate will be used (150)")
-            self.consumptionRate = 150
+            raise ValueError("Invalid consumption rate. It should be between 0 and 150.")
     
     def __str__(self):
         """ set the string value of the smart plug"""
         if self.switchedOn:
-            output = "Smart Plug: Off 0 KW"
-        else:
             output = "Smart Plug: On {} KW".format(self.getConsumptionRate())
+        else:
+            output = "Smart Plug: Off 0 KW"
         return output
 
 class SmartHeater(SmartDevice):
@@ -52,15 +51,14 @@ class SmartHeater(SmartDevice):
         if newSetting >=0 and newSetting <=5:
             self.setting = newSetting
         else:
-            self.setting = 5
-            print("Max Setting will be used (5)")
+            raise ValueError("Invalid setting. It should be between 0 and 5.")
 
     def __str__(self):
         """ returns the string value of the heater"""
         if self.switchedOn:
-            output = "Smart Heater: Off Setting: 0"
-        else:
             output = "Smart Heater: On Setting: {}".format(self.getSetting())
+        else:
+            output = "Smart Heater: Off Setting: 0"
         return output
 
 def testSmartPlug():
@@ -114,12 +112,12 @@ class SmartHome:
     def turnAllOn(self):
         """ turn all devices on"""
         for device in self.devices:
-            device.switchedOn = False
+            device.switchedOn = True
 
     def turnAllOff(self):
         """ turn all devices off """
         for device in self.devices:
-            device.switchedOn = True
+            device.switchedOn = False
     
     def __str__(self):
         """ returns the string value of the smart home class"""
@@ -151,4 +149,4 @@ def testSmartHome():
 
     print(smartHome)
 
-testSmartPlug()
+#testSmartPlug()
